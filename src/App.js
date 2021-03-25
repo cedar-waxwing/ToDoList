@@ -7,11 +7,7 @@ class App extends React.Component {
   constructor(props) {
     super(props);
     {/*anything in this state, react saves as a const. can't push. can create new value and setstate. Create a new versions of array with concat or spred destructuring operator*/ }
-    this.state = { newtodoitem: "", list: [] };
-
-    //this.handleChange = this.handleChange.bind(this);
-    //this.handleSubmit = this.handleSubmit.bind(this);
-    //this.handleKeyPress = this.handleKeyPress.bind(this);
+    this.state = { newtodoitem: "", list: [], counter: 0 };
   }
 
   //local storage ________________________________
@@ -49,10 +45,10 @@ class App extends React.Component {
       if (this.state.list.length > 0) {
         listCopy.push(this.state.list[i])
       }
-      console.log(listCopy)
+      //console.log(listCopy)
     }
     listCopy.push(newEntry)
-    console.log(listCopy)
+    // console.log(listCopy)
 
     this.setState({
       list: listCopy,
@@ -65,6 +61,7 @@ class App extends React.Component {
     //console.log(event)
     if (event.key === "Enter") {
       this.handleSubmit()
+      this.itemsLeft();
     }
   }
 
@@ -79,29 +76,17 @@ class App extends React.Component {
     )
   }
 
-  //complete should use filter
-  //this is to mark complete (here or in todo)
-  // markComplete = () => {
-  //   this.setState({
-  //     list: this.state.list.map(item => {
-  //       if (item.id === id) {
-  //         //here, setting to !item.completed bc if set to false, it will stay false and not toggle. This sets it to the opposite. 
-  //         item.completed = !item.completed
-  //       }
-  //       return item;
-  //     })
-  //   });
-  // }
+  markComplete = (id) => {
+    this.setState({
+      list: this.state.list.filter(item => {
+        if (item.id === id) {
+          item.completed = !item.completed
+        }
+        return item;
 
-  // render() {
-  //       <List list={this.state.list} />
-
-
-  itemsLeft = () => {
-    //Need to do this after I mark completed/not completed, 
-    //because I only want to output the number remaining todo.
+      })
+    })
   }
-
 
   handleDelete = (id) => {
     this.setState({
@@ -114,7 +99,23 @@ class App extends React.Component {
       })
     })
   }
-//1. filter, 2. map
+
+  itemsLeft = () => {
+    this.state.counter = 0;
+    for (let i = 0; i < this.state.list.length; i++) {
+      if (this.state.list[i].completed == false) {
+        this.state.counter++
+      }
+      // return "Items left:" + this.state.counter
+    }
+  }
+
+    //for loop, looping through list array to check how many completed. counter++. output #.
+    //Need to do this after I mark completed/not completed, 
+    //because I only want to output the number remaining todo.
+  
+
+  //1. filter, 2. map
   //do a conditional render based on true or false
   //map -- filter only items wants to show 
 
@@ -132,15 +133,20 @@ class App extends React.Component {
         {this.state.list.filter((item, index) => {
           if (!item.deleted) {
             return item
+          } else if (!item.completed) {
+            //this.state.newtodoitem {{textDecorationLine: "line-through"}}
           }
         }).map((item, index) => {
           return (
-            <Todo key={index} item={item} handleDelete={this.handleDelete}/>
+            <Todo key={index} item={item} handleDelete={this.handleDelete} markComplete={this.markComplete}
+            />
           )
         })
         }
-        //to filter for completed or not, put more if statements under item if deleted statement
-        <div>Placeholder</div>
+        <div>Items left: {this.state.counter}</div>
+        <button onClick=""> All </button>
+        <button onClick=""> Remaining </button>
+        <button onClick=""> Completed </button>
       </>
 
     );

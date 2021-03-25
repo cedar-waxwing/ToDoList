@@ -3,9 +3,9 @@ const Todo = (props) => {
         return (
             <>
             <div> {props.item.title} </div>
-            {/* Need onclick, change item.completed from true to false  */}
+            {/* With JSX, show strikethrough */}
             <button onClick={() =>
-            props.markComplete(props.item.id)}>Completed</button>
+            props.markComplete(props.item.id) } className={props.newEntry.completed == true ? "text-decoration:line-through" : null }>Completed</button>
             <button onClick={() =>
             props.handleDelete(props.item.id)}>Delete</button>
             </>

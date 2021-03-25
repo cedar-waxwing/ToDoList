@@ -7,7 +7,7 @@ class App extends React.Component {
   constructor(props) {
     super(props);
     {/*anything in this state, react saves as a const. can't push. can create new value and setstate. Create a new versions of array with concat or spred destructuring operator*/ }
-    this.state = { newtodoitem: "", list: [], counter: 0 };
+    this.state = { newtodoitem: "", list: [], counter: 0, filteredby: 2 };
   }
 
   //local storage ________________________________
@@ -23,6 +23,7 @@ class App extends React.Component {
   }
   componentDidUpdate = () => {
     window.localStorage.setItem("list", JSON.stringify(this.state.list))
+    this.itemsLeft();
   }
 
   handleChange = (event) => {
@@ -32,8 +33,9 @@ class App extends React.Component {
   //________________________________________________
 
   //this is the updater function for the list on the page 
+
   handleSubmit = () => {
-    let listCopy = [];
+    // let listCopy = [];
     let newEntry =
     {
       id: this.state.list.length,
@@ -41,19 +43,19 @@ class App extends React.Component {
       completed: false,
       deleted: false,
     }
-    for (let i = 0; i < this.state.list.length; i++) {
-      if (this.state.list.length > 0) {
-        listCopy.push(this.state.list[i])
-      }
-      //console.log(listCopy)
-    }
-    listCopy.push(newEntry)
-    // console.log(listCopy)
+    let listCopy = this.state.list.concat(newEntry)
+    // for (let i = 0; i < this.state.list.length; i++) {
+    //     listCopy.push(this.state.list[i])
+    //   //console.log(listCopy)
+    // }
+    // listCopy.push(newEntry)
+    // // console.log(listCopy)
 
     this.setState({
       list: listCopy,
       newtodoitem: ""
     });
+
   }
   //________________________________________________
 
@@ -61,7 +63,6 @@ class App extends React.Component {
     //console.log(event)
     if (event.key === "Enter") {
       this.handleSubmit()
-      this.itemsLeft();
     }
   }
 
@@ -78,7 +79,7 @@ class App extends React.Component {
 
   markComplete = (id) => {
     this.setState({
-      list: this.state.list.filter(item => {
+      list: this.state.list.map(item => {
         if (item.id === id) {
           item.completed = !item.completed
         }
@@ -86,6 +87,7 @@ class App extends React.Component {
 
       })
     })
+
   }
 
   handleDelete = (id) => {
@@ -98,26 +100,44 @@ class App extends React.Component {
 
       })
     })
+
   }
 
   itemsLeft = () => {
-    this.state.counter = 0;
-    for (let i = 0; i < this.state.list.length; i++) {
-      if (this.state.list[i].completed == false) {
-        this.state.counter++
+    let increment = 0
+    // this.state.counter = 0;
+    //look into using reduce instead of for loop
+    for (let item of this.state.list) {
+      console.log(item)
+      if (!item.completed && !item.deleted) {
+        increment++
+        console.log("incrementing", increment)
       }
-      // return "Items left:" + this.state.counter
     }
+    this.setState(previousState => {
+      if (previousState.counter != increment) {
+        return { counter: increment }
+      }
+    })
   }
 
-    //for loop, looping through list array to check how many completed. counter++. output #.
-    //Need to do this after I mark completed/not completed, 
-    //because I only want to output the number remaining todo.
-  
+  allItems = () => {
+    this.setState({
+      filteredby: 2
+    })
+  };
 
-  //1. filter, 2. map
-  //do a conditional render based on true or false
-  //map -- filter only items wants to show 
+  remainingItems = () => {
+    this.setState({
+      filteredby: 1
+    })
+  };
+
+  completedItems = () => {
+    this.setState({
+      filteredby: 0
+    })
+  };
 
   render = () => {
     return (
@@ -132,10 +152,15 @@ class App extends React.Component {
 
         {this.state.list.filter((item, index) => {
           if (!item.deleted) {
-            return item
-          } else if (!item.completed) {
-            //this.state.newtodoitem {{textDecorationLine: "line-through"}}
+            if (this.state.filteredby == 2) {
+              return item
+            } else if (this.state.filteredby == 1 && !item.completed) {
+              return item 
+            } else if (this.state.filteredby == 0 && item.completed) {
+              return item 
+            }
           }
+
         }).map((item, index) => {
           return (
             <Todo key={index} item={item} handleDelete={this.handleDelete} markComplete={this.markComplete}
@@ -144,9 +169,9 @@ class App extends React.Component {
         })
         }
         <div>Items left: {this.state.counter}</div>
-        <button onClick=""> All </button>
-        <button onClick=""> Remaining </button>
-        <button onClick=""> Completed </button>
+        <button onClick={this.allItems}> All </button>
+        <button onClick={this.remainingItems}> Remaining </button>
+        <button onClick={this.completedItems}> Completed </button>
       </>
 
     );
